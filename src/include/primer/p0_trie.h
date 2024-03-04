@@ -307,6 +307,7 @@ class Trie {
     if(key.empty()) {
       return false;
     }
+    latch_.WLock();
     int len = key.length();
     std::unique_ptr<TrieNode>* temp_root = &root_;
     for(int i = 0; i < len - 1; i++)
@@ -320,12 +321,14 @@ class Trie {
 
     std::unique_ptr<TrieNode> *end_node = (*temp_root)->GetChildNode(key[len - 1]);
     if(end_node != nullptr && end_node->get()->IsEndNode()) {
+      latch_.WUnlock();
       return false;
     }
 
     if(end_node != nullptr) {
       auto new_node = new TrieNodeWithValue(std::move(**end_node), value);
       end_node->reset(new_node);
+      latch_.WUnlock();
       return true;
     }
 
@@ -333,6 +336,7 @@ class Trie {
     temp_root = (*temp_root)->InsertChildNode(key[len - 1], std::make_unique<TrieNode>(key[len - 1]));
     auto new_node = new TrieNodeWithValue(std::move(**temp_root), value);
     temp_root->reset(new_node);
+    latch_.WUnlock();
     return true;
   }
 
@@ -357,11 +361,13 @@ class Trie {
     if(key.empty()) {
       return false;
     }
+    latch_.WLock();
     std::unique_ptr<TrieNode>* temp_root = &root_;
     std::vector<std::unique_ptr<TrieNode>*> stk;
     for(auto ch : key)
     {
       if(!(*temp_root)->HasChild(ch)) {
+        latch_.WUnlock();
         return false;
       }
       stk.push_back(temp_root);
@@ -378,6 +384,7 @@ class Trie {
         break;
       }
     }
+    latch_.WUnlock();
     return true;
   }
 
@@ -405,26 +412,30 @@ class Trie {
     if(key.empty()) {
       return {};
     }
+    latch_.RLock();
     int len = key.length();
     std::unique_ptr<TrieNode>* temp_root = &root_;
     for(int i = 0; i < len; i++) {
-      if(!(*temp_root).get()->HasChild(key[i])) {
+      if(!(*temp_root)->HasChild(key[i])) {
+        latch_.RUnlock();
         return {};
       }
-      temp_root = (*temp_root).get()->GetChildNode(key[i]);
+      temp_root = (*temp_root)->GetChildNode(key[i]);
     }
 
-    if(!(*temp_root).get()->IsEndNode()) {
+    if(!(*temp_root)->IsEndNode()) {
+      latch_.RUnlock();
       return {};
     }
 
     // auto flag_node = dynamic_cast<TrieNodeWithValue<T> *>(pt->get());
     auto new_end = dynamic_cast<TrieNodeWithValue<T> *>(temp_root->get());
     if(new_end == nullptr) {
+      latch_.RUnlock();
       return {};
     }
     *success = true; 
-
+    latch_.RUnlock();
     return new_end->GetValue();
   }
 };
