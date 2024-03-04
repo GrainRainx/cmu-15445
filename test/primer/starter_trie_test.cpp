@@ -64,7 +64,7 @@ TEST(StarterTest, TrieNodeRemoveTest) {
   auto t = TrieNode('a');
   __attribute__((unused)) auto child_node = t.InsertChildNode('b', std::make_unique<TrieNode>('b'));
   child_node = t.InsertChildNode('c', std::make_unique<TrieNode>('c'));
-  
+
   t.RemoveChildNode('b');
   EXPECT_EQ(t.HasChild('b'), false);
   EXPECT_EQ(t.HasChildren(), true);
@@ -78,7 +78,7 @@ TEST(StarterTest, TrieNodeRemoveTest) {
   EXPECT_EQ(child_node, nullptr);
 }
 
-TEST(StarterTest, DISABLED_TrieInsertTest) {
+TEST(StarterTest, TrieInsertTest) {
   {
     Trie trie;
     trie.Insert<std::string>("abc", "d");
@@ -97,7 +97,7 @@ TEST(StarterTest, DISABLED_TrieInsertTest) {
     EXPECT_EQ(success, false);
   }
 
-  // Insert duplicated key should not modify existing value
+  // // Insert duplicated key should not modify existing value
   {
     Trie trie;
     bool success = trie.Insert<int>("abc", 5);
@@ -111,7 +111,7 @@ TEST(StarterTest, DISABLED_TrieInsertTest) {
     EXPECT_EQ(val, 5);
   }
 
-  // Insert different data types
+  // // Insert different data types
   {
     Trie trie;
     bool success = trie.Insert<int>("a", 5);
