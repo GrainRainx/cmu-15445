@@ -86,7 +86,7 @@ class TrieNode {
    * @return True if this trie node has any child node, false if it has no child node.
    */
   bool HasChildren() const { 
-    bool flag = children_.empty();
+    bool flag = !children_.empty();
     return flag;
   }
 
@@ -313,7 +313,10 @@ class Trie {
    * @param key Key used to traverse the trie and find the correct node
    * @return True if the key exists and is removed, false otherwise
    */
-  bool Remove(const std::string &key) { return false; }
+  bool Remove(const std::string &key) {
+
+    return false;
+  }
 
   /**
    * TODO(P0): Add implementation

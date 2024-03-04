@@ -60,11 +60,11 @@ TEST(StarterTest, TrieNodeInsertTest) {
   EXPECT_EQ((*child_node)->GetKeyChar(), 'c');
 }
 
-TEST(StarterTest, DISABLED_TrieNodeRemoveTest) {
+TEST(StarterTest, TrieNodeRemoveTest) {
   auto t = TrieNode('a');
   __attribute__((unused)) auto child_node = t.InsertChildNode('b', std::make_unique<TrieNode>('b'));
   child_node = t.InsertChildNode('c', std::make_unique<TrieNode>('c'));
-
+  
   t.RemoveChildNode('b');
   EXPECT_EQ(t.HasChild('b'), false);
   EXPECT_EQ(t.HasChildren(), true);
