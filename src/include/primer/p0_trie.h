@@ -354,8 +354,31 @@ class Trie {
    * @return True if the key exists and is removed, false otherwise
    */
   bool Remove(const std::string &key) {
-
-    return false;
+    if(key.empty()) {
+      return false;
+    }
+    std::unique_ptr<TrieNode>* temp_root = &root_;
+    std::vector<std::unique_ptr<TrieNode>*> stk;
+    for(auto ch : key)
+    {
+      if(!(*temp_root)->HasChild(ch)) {
+        return false;
+      }
+      stk.push_back(temp_root);
+      temp_root = (*temp_root)->GetChildNode(ch);
+    }
+    (*temp_root)->SetEndNode(false);
+    stk.push_back(temp_root);
+    int len = stk.size();
+    for(int i = len - 1; i > 1; i--)
+    {
+      if (!(*stk[i])->IsEndNode() && !(*stk[i])->HasChildren()) {
+        (*stk[i - 1])->RemoveChildNode((*stk[i])->GetKeyChar());
+      } else {
+        break;
+      }
+    }
+    return true;
   }
 
   /**
