@@ -73,12 +73,9 @@ template <typename K, typename V>
 auto ExtendibleHashTable<K, V>::Find(const K &key, V &value) -> bool {
   size_t index = IndexOf(key);
   bool flag = false;
-  for(auto it = dir_[index]->GetItems().begin(); it != dir_[index]->GetItems().end(); it++) {
-    if(it->first == key) {
-      value = it->second;
-      flag = true;
-    }
-  }
+  latch_.lock();
+  flag = dir_[index]->Find(key, value);
+  latch_.unlock();
   return flag;
 }
 
@@ -86,18 +83,13 @@ template <typename K, typename V>
 auto ExtendibleHashTable<K, V>::Remove(const K &key) -> bool {
   size_t index = IndexOf(key);
   bool flag = false;
-  for(auto it = dir_[index]->GetItems().begin(); it != dir_[index]->GetItems().end();) {
-    if(it->first == key) {
-      it = dir_[index]->GetItems().erase(it);
-      flag = true;
-    } else {
-      ++it;
-    }
-  }
+  latch_.lock();
+  flag = dir_[index]->Remove(key);
+  latch_.unlock();
   return flag;
 }
 
-int Lowmask(int number,int n) {
+auto Lowmask(int number, int n) ->int{
   int mask = (1 << n) - 1;
   return number & mask;
 }
@@ -110,8 +102,8 @@ auto ExtendibleHashTable<K, V>::RedistributeBucket(std::shared_ptr<Bucket> bucke
   std::shared_ptr<Bucket> new_bucket(new Bucket(bucket_size_, new_depth));
 
   int pre_bucket_mask = Lowmask(std::hash<K>()(bucket->GetItems().begin()->first), new_depth - 1);
-  for(auto it = (bucket->GetItems().begin()); it != (bucket->GetItems().end());) {
-    if(pre_bucket_mask != Lowmask(std::hash<K>()((*it).first), new_depth)) {
+  for (auto it = (bucket->GetItems().begin()); it != (bucket->GetItems().end());) {
+    if (pre_bucket_mask != Lowmask(std::hash<K>()((*it).first), new_depth)) {
       new_bucket->Insert(it->first, it->second);
       it = bucket->GetItems().erase(it);
     } else {
@@ -119,33 +111,32 @@ auto ExtendibleHashTable<K, V>::RedistributeBucket(std::shared_ptr<Bucket> bucke
     }
   }
 
-  for(int i = 0; i < (1 << global_depth_); i++) {
-    if(Lowmask(i, new_depth - 1) == pre_bucket_mask && Lowmask(i, new_depth) != pre_bucket_mask) {
+  for (int i = 0; i < (1 << global_depth_); i++) {
+    if (Lowmask(i, new_depth - 1) == pre_bucket_mask && Lowmask(i, new_depth) != pre_bucket_mask) {
       dir_[i] = new_bucket;
     }
   }
-
 }
-
 
 template <typename K, typename V>
 void ExtendibleHashTable<K, V>::Insert(const K &key, const V &value) {
-
   size_t index = IndexOf(key);
-  if(dir_[index]->IsFull()) {
-    if(GetGlobalDepth() == GetLocalDepth(index)) {
-     // 因该执行dirtory的扩张 ，扩张一倍 
-      for(int i = 0; i < (1 << global_depth_); i++) {
+  latch_.lock();
+  if (dir_[index]->IsFull()) {
+    if (global_depth_ == GetLocalDepthInternal(index)) {
+      // 因该执行dirtory的扩张 ，扩张一倍
+      for (int i = 0; i < (1 << global_depth_); i++) {
         auto tmp = dir_[i];
         dir_.push_back(tmp);
       }
       global_depth_++;
-    } 
+    }
     // 分裂bucket 并且bucket的localdepth++
     index = IndexOf(key);
-    RedistributeBucket(dir_[index]); 
+    RedistributeBucket(dir_[index]);
   }
   dir_[index]->Insert(key, value);
+  latch_.unlock();
 }
 
 //===--------------------------------------------------------------------===//
@@ -156,23 +147,21 @@ ExtendibleHashTable<K, V>::Bucket::Bucket(size_t array_size, int depth) : size_(
 
 template <typename K, typename V>
 auto ExtendibleHashTable<K, V>::Bucket::Find(const K &key, V &value) -> bool {
-
   for (auto it = list_.begin(); it != list_.end();) {
-    if ((*it).first == key && (*it).second == value) {
+    if (it->first == key) {
+      value = it->second;
       return true;
-    } else {
-      ++it;
     }
+    ++it;
   }
   return false;
-  UNREACHABLE("not implemented");
 }
 
 template <typename K, typename V>
 auto ExtendibleHashTable<K, V>::Bucket::Remove(const K &key) -> bool {
   bool flag = false;
-  for(auto it = list_.begin(); it != list_.end(); ) {
-    if((*it).first == key) {
+  for (auto it = list_.begin(); it != list_.end();) {
+    if ((*it).first == key) {
       it = list_.erase(it);
       flag = true;
     } else {
@@ -180,13 +169,11 @@ auto ExtendibleHashTable<K, V>::Bucket::Remove(const K &key) -> bool {
     }
   }
   return flag;
-  UNREACHABLE("not implemented");
 }
 
 template <typename K, typename V>
 auto ExtendibleHashTable<K, V>::Bucket::Insert(const K &key, const V &value) -> bool {
-
-  if(IsFull()) {
+  if (IsFull()) {
     return false;
   }
   bool flag = false;
@@ -198,7 +185,7 @@ auto ExtendibleHashTable<K, V>::Bucket::Insert(const K &key, const V &value) -> 
       ++it;
     }
   }
-  if(flag) {
+  if (flag) {
     return true;
   }
   list_.push_back(std::make_pair(key, value));
