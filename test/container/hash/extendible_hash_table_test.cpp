@@ -5,14 +5,14 @@
 #include <memory>
 #include <thread>  // NOLINT
 
+#include "common/logger.h"
 #include "container/hash/extendible_hash_table.h"
 #include "gtest/gtest.h"
 
 namespace bustub {
 
-TEST(ExtendibleHashTableTest, DISABLED_SampleTest) {
+TEST(ExtendibleHashTableTest, SampleTest) {
   auto table = std::make_unique<ExtendibleHashTable<int, std::string>>(2);
-
   table->Insert(1, "a");
   table->Insert(2, "b");
   table->Insert(3, "c");
@@ -22,6 +22,7 @@ TEST(ExtendibleHashTableTest, DISABLED_SampleTest) {
   table->Insert(7, "g");
   table->Insert(8, "h");
   table->Insert(9, "i");
+
   EXPECT_EQ(2, table->GetLocalDepth(0));
   EXPECT_EQ(3, table->GetLocalDepth(1));
   EXPECT_EQ(2, table->GetLocalDepth(2));
