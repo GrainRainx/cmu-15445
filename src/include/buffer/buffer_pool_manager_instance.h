@@ -140,6 +140,8 @@ class BufferPoolManagerInstance : public BufferPoolManager {
    */
   auto DeletePgImp(page_id_t page_id) -> bool override;
 
+  auto FindEmptyFrameid(frame_id_t *frame) -> bool;
+
   /** Number of pages in the buffer pool. */
   const size_t pool_size_;
   /** The next page id to be allocated  */

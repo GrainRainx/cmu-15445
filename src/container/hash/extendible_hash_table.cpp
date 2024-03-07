@@ -89,7 +89,7 @@ auto ExtendibleHashTable<K, V>::Remove(const K &key) -> bool {
   return flag;
 }
 
-auto Lowmask(int number, int n) ->int{
+auto Lowmask(int number, int n) -> int {
   int mask = (1 << n) - 1;
   return number & mask;
 }

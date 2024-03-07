@@ -23,11 +23,12 @@ namespace bustub {
 
 // NOLINTNEXTLINE
 // Check whether pages containing terminal characters can be recovered
-TEST(BufferPoolManagerInstanceTest, DISABLED_BinaryDataTest) {
+TEST(BufferPoolManagerInstanceTest, BinaryDataTest) {
   const std::string db_name = "test.db";
   const size_t buffer_pool_size = 10;
   const size_t k = 5;
 
+  using namespace std;
   std::random_device r;
   std::default_random_engine rng(r());
   std::uniform_int_distribution<char> uniform_dist(0);
@@ -37,10 +38,11 @@ TEST(BufferPoolManagerInstanceTest, DISABLED_BinaryDataTest) {
 
   page_id_t page_id_temp;
   auto *page0 = bpm->NewPage(&page_id_temp);
-
   // Scenario: The buffer pool is empty. We should be able to create a new page.
   ASSERT_NE(nullptr, page0);
   EXPECT_EQ(0, page_id_temp);
+
+
 
   char random_binary_data[BUSTUB_PAGE_SIZE];
   // Generate random binary data
@@ -89,7 +91,7 @@ TEST(BufferPoolManagerInstanceTest, DISABLED_BinaryDataTest) {
 }
 
 // NOLINTNEXTLINE
-TEST(BufferPoolManagerInstanceTest, DISABLED_SampleTest) {
+TEST(BufferPoolManagerInstanceTest, SampleTest) {
   const std::string db_name = "test.db";
   const size_t buffer_pool_size = 10;
   const size_t k = 5;
@@ -112,7 +114,6 @@ TEST(BufferPoolManagerInstanceTest, DISABLED_SampleTest) {
   for (size_t i = 1; i < buffer_pool_size; ++i) {
     EXPECT_NE(nullptr, bpm->NewPage(&page_id_temp));
   }
-
   // Scenario: Once the buffer pool is full, we should not be able to create any new pages.
   for (size_t i = buffer_pool_size; i < buffer_pool_size * 2; ++i) {
     EXPECT_EQ(nullptr, bpm->NewPage(&page_id_temp));
@@ -129,6 +130,8 @@ TEST(BufferPoolManagerInstanceTest, DISABLED_SampleTest) {
 
   // Scenario: We should be able to fetch the data we wrote a while ago.
   page0 = bpm->FetchPage(0);
+  // using namespace std;
+  // cout << "str = " << page0->GetData() << endl;
   EXPECT_EQ(0, strcmp(page0->GetData(), "Hello"));
 
   // Scenario: If we unpin page 0 and then make a new page, all the buffer pages should
