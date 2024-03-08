@@ -13,7 +13,7 @@
 #pragma once
 
 #include <list>
-#include <mutex>  // NOLINT
+// #include <mutex>  // NOLINT
 #include <unordered_map>
 
 #include "buffer/buffer_pool_manager.h"

@@ -28,7 +28,6 @@ TEST(BufferPoolManagerInstanceTest, BinaryDataTest) {
   const size_t buffer_pool_size = 10;
   const size_t k = 5;
 
-  using namespace std;
   std::random_device r;
   std::default_random_engine rng(r());
   std::uniform_int_distribution<char> uniform_dist(0);
@@ -41,8 +40,6 @@ TEST(BufferPoolManagerInstanceTest, BinaryDataTest) {
   // Scenario: The buffer pool is empty. We should be able to create a new page.
   ASSERT_NE(nullptr, page0);
   EXPECT_EQ(0, page_id_temp);
-
-
 
   char random_binary_data[BUSTUB_PAGE_SIZE];
   // Generate random binary data

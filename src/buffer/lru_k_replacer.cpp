@@ -41,24 +41,7 @@ auto LRUKReplacer::Evict(frame_id_t *frame_id) -> bool {
   if (curr_size_ == 0) {
     return false;
   }
-  // using namespace std; 
-  // cout << "i am in Evict" << endl;
-  // cout << "[ ";
-  // for (auto it = history_list_.rbegin(); it != history_list_.rend(); it++) {
-  //   auto frame = *it;
-  //   cout << frame << ", ";
-  // }
-  // cout << "]";
-  // cout << endl;
-  // cout << "next is cache " << endl;
-  // cout << "[ ";
-  // for (auto it = cache_list_.rbegin(); it != cache_list_.rend(); it++) {
-  //   auto frame = *it;
-  //   cout << frame << ", ";
-  // }
-  // cout << "]";
-  // cout << endl;
-  // return false;
+
   latch_.lock();
   for (auto it = history_list_.rbegin(); it != history_list_.rend(); it++) {
     auto frame = *it;
