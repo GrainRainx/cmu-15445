@@ -13,7 +13,6 @@
 #include "buffer/lru_k_replacer.h"
 #include <cstddef>
 #include <exception>
-#include <mutex>
 #include "common/config.h"
 #include "common/exception.h"
 
@@ -119,8 +118,8 @@ void LRUKReplacer::Remove(frame_id_t frame_id) {
   if (frame_id > static_cast<int>(replacer_size_)) {
     throw std::exception();
   }
-  if(access_count_[frame_id] == 0) {
-    return ;
+  if (access_count_[frame_id] == 0) {
+    return;
   }
   if (!is_evictable_[frame_id]) {
     throw std::exception();

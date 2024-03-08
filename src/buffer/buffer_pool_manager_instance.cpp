@@ -165,7 +165,7 @@ auto BufferPoolManagerInstance::DeletePgImp(page_id_t page_id) -> bool {
   if (!page_table_->Find(page_id, frame_id)) {
     return true;
   }
-  if(pages_[frame_id].GetPinCount() > 0) {
+  if (pages_[frame_id].GetPinCount() > 0) {
     return false;
   }
   page_table_->Remove(page_id);
