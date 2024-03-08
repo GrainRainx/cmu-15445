@@ -91,10 +91,12 @@ void LRUKReplacer::RecordAccess(frame_id_t frame_id) {
     cache_list_.push_front(frame_id);
   } else {
     auto dele_frame = HistoryGetFrame(frame_id);
-    if (dele_frame != history_list_.end()) {
-      history_list_.erase(dele_frame);
+    // if (dele_frame != history_list_.end()) {
+    //   history_list_.erase(dele_frame);
+    // }
+    if (dele_frame == history_list_.end()) {
+      history_list_.push_front(frame_id);
     }
-    history_list_.push_front(frame_id);
   }
 }
 
