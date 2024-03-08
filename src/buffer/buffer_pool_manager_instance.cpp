@@ -91,12 +91,10 @@ auto BufferPoolManagerInstance::FetchPgImp(page_id_t page_id) -> Page * {
   }
 
   frame_id_t get_frame_id;
-  if (page_table_->Find(page_id, get_frame_id)) {
+  if (page_table_->Find(page_id, get_frame_id) && pages_[get_frame_id].page_id_ == page_id) {
     pages_[get_frame_id].pin_count_++;
-    pages_[get_frame_id].page_id_ = page_id;
     replacer_->SetEvictable(get_frame_id, false);
     replacer_->RecordAccess(get_frame_id);
-
     return &pages_[get_frame_id];
   }
   frame_id_t free_frame_id;
@@ -120,12 +118,10 @@ auto BufferPoolManagerInstance::FetchPgImp(page_id_t page_id) -> Page * {
 auto BufferPoolManagerInstance::UnpinPgImp(page_id_t page_id, bool is_dirty) -> bool {
   std::scoped_lock<std::mutex> lock(latch_);
   int frame_id;
-  if (!page_table_->Find(page_id, frame_id)) {
+  if (!page_table_->Find(page_id, frame_id) || pages_[frame_id].pin_count_ == 0) {
     return false;
   }
-  if (pages_[frame_id].pin_count_ == 0) {
-    return false;
-  }
+
   pages_[frame_id].pin_count_--;
   if (pages_[frame_id].pin_count_ == 0) {
     replacer_->SetEvictable(frame_id, true);

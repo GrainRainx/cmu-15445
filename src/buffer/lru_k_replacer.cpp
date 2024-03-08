@@ -75,7 +75,7 @@ void LRUKReplacer::RecordAccess(frame_id_t frame_id) {
   if (frame_id > static_cast<int>(replacer_size_)) {
     throw std::exception();
   }
-  latch_.lock();
+  std::scoped_lock<std::mutex> lock(latch_);
   access_count_[frame_id]++;
   if (access_count_[frame_id] == k_) {
     auto dele_frame = HistoryGetFrame(frame_id);
@@ -96,7 +96,6 @@ void LRUKReplacer::RecordAccess(frame_id_t frame_id) {
     }
     history_list_.push_front(frame_id);
   }
-  latch_.unlock();
 }
 
 void LRUKReplacer::SetEvictable(frame_id_t frame_id, bool set_evictable) {
