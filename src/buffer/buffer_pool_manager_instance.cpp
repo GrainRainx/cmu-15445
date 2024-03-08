@@ -148,7 +148,7 @@ auto BufferPoolManagerInstance::FlushPgImp(page_id_t page_id) -> bool {
 void BufferPoolManagerInstance::FlushAllPgsImp() {
   std::scoped_lock<std::mutex> lock(latch_);
   for (size_t i = 0; i < pool_size_; i++) {
-    if (pages_[i].is_dirty_ && pages_[i].page_id_ != INVALID_PAGE_ID) {
+    if (pages_[i].page_id_ != INVALID_PAGE_ID) {
       disk_manager_->WritePage(pages_[i].page_id_, pages_[i].data_);
       pages_[i].is_dirty_ = false;
     }
