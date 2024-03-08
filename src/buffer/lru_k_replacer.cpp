@@ -12,6 +12,8 @@
 
 #include "buffer/lru_k_replacer.h"
 #include <cstddef>
+#include <exception>
+#include <mutex>
 #include "common/config.h"
 #include "common/exception.h"
 
@@ -38,9 +40,8 @@ auto LRUKReplacer::CacheGetFrame(frame_id_t frame_id) -> std::list<frame_id_t>::
 }
 
 auto LRUKReplacer::Evict(frame_id_t *frame_id) -> bool {
-  latch_.lock();
+  std::scoped_lock<std::mutex> lock(latch_);
   if (curr_size_ == 0) {
-    latch_.unlock();
     return false;
   }
   for (auto it = history_list_.rbegin(); it != history_list_.rend(); it++) {
@@ -52,7 +53,6 @@ auto LRUKReplacer::Evict(frame_id_t *frame_id) -> bool {
       history_list_.erase(de_iter);
       curr_size_--;
       is_evictable_[frame] = false;
-      latch_.unlock();
       return true;
     }
   }
@@ -66,11 +66,9 @@ auto LRUKReplacer::Evict(frame_id_t *frame_id) -> bool {
       cache_list_.erase(de_iter);
       curr_size_--;
       is_evictable_[frame] = false;
-      latch_.unlock();
       return true;
     }
   }
-  latch_.unlock();
   return false;
 }
 
@@ -106,7 +104,7 @@ void LRUKReplacer::SetEvictable(frame_id_t frame_id, bool set_evictable) {
   if (frame_id > static_cast<int>(replacer_size_)) {
     throw std::exception();
   }
-  latch_.lock();
+  std::scoped_lock<std::mutex> lock(latch_);
   if (!is_evictable_[frame_id] && set_evictable) {
     curr_size_++;
   }
@@ -114,16 +112,18 @@ void LRUKReplacer::SetEvictable(frame_id_t frame_id, bool set_evictable) {
     curr_size_--;
   }
   is_evictable_[frame_id] = set_evictable;
-  latch_.unlock();
 }
 
 void LRUKReplacer::Remove(frame_id_t frame_id) {
+  std::scoped_lock<std::mutex> lock(latch_);
   if (frame_id > static_cast<int>(replacer_size_)) {
     throw std::exception();
   }
-  latch_.lock();
+  if(access_count_[frame_id] == 0) {
+    return ;
+  }
   if (!is_evictable_[frame_id]) {
-    latch_.unlock();
+    throw std::exception();
     return;
   }
   if (access_count_[frame_id] >= k_) {
@@ -135,7 +135,7 @@ void LRUKReplacer::Remove(frame_id_t frame_id) {
   }
   curr_size_--;
   access_count_[frame_id] = 0;
-  latch_.unlock();
+  is_evictable_[frame_id] = false;
 }
 
 auto LRUKReplacer::Size() -> size_t {
