@@ -103,6 +103,10 @@ void LRUKReplacer::SetEvictable(frame_id_t frame_id, bool set_evictable) {
     throw std::exception();
   }
   std::scoped_lock<std::mutex> lock(latch_);
+  if (access_count_[frame_id] == 0) {
+    return;
+  }
+
   if (!is_evictable_[frame_id] && set_evictable) {
     curr_size_++;
   }

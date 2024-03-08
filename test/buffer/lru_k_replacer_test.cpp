@@ -96,4 +96,41 @@ TEST(LRUKReplacerTest, SampleTest) {
   lru_replacer.Remove(1);
   ASSERT_EQ(0, lru_replacer.Size());
 }
+
+TEST(LRUKReplacerTest, MyDebugTest) {
+  LRUKReplacer lru_replacer(3, 2);
+
+  lru_replacer.RecordAccess(1);
+  lru_replacer.RecordAccess(2);
+  lru_replacer.RecordAccess(2);
+  lru_replacer.RecordAccess(2);
+  lru_replacer.RecordAccess(3);
+
+  lru_replacer.SetEvictable(1, false);
+  lru_replacer.SetEvictable(2, false);
+  lru_replacer.SetEvictable(3, false);
+
+  ASSERT_EQ(0, lru_replacer.Size());
+
+  int myvalue;
+  EXPECT_EQ(false, lru_replacer.Evict(&myvalue));
+  EXPECT_EQ(false, lru_replacer.Evict(&myvalue));
+
+  lru_replacer.SetEvictable(1, true);
+
+  ASSERT_EQ(1, lru_replacer.Size());
+
+  EXPECT_EQ(true, lru_replacer.Evict(&myvalue));
+  EXPECT_EQ(1, myvalue);
+
+  lru_replacer.SetEvictable(2, true);
+  ASSERT_EQ(1, lru_replacer.Size());
+  EXPECT_EQ(true, lru_replacer.Evict(&myvalue));
+  EXPECT_EQ(2, myvalue);
+
+  lru_replacer.SetEvictable(2, true);
+  ASSERT_EQ(0, lru_replacer.Size());
+  EXPECT_EQ(false, lru_replacer.Evict(&myvalue));
+}
+
 }  // namespace bustub
