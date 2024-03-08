@@ -137,11 +137,11 @@ auto BufferPoolManagerInstance::FlushPgImp(page_id_t page_id) -> bool {
   if (!page_table_->Find(page_id, frame_id)) {
     return false;
   }
-  if (pages_[frame_id].is_dirty_) {
-    disk_manager_->WritePage(page_id, pages_[frame_id].data_);
-    pages_[frame_id].is_dirty_ = false;
+  if (pages_[frame_id].page_id_ == INVALID_PAGE_ID) {
+    return false;
   }
-
+  disk_manager_->WritePage(page_id, pages_[frame_id].data_);
+  pages_[frame_id].is_dirty_ = false;
   return true;
 }
 
