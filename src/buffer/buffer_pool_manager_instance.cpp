@@ -86,9 +86,9 @@ auto BufferPoolManagerInstance::NewPgImp(page_id_t *page_id) -> Page * {
 auto BufferPoolManagerInstance::FetchPgImp(page_id_t page_id) -> Page * {
   std::scoped_lock<std::mutex> lock(latch_);
 
-  if (free_list_.empty() && replacer_->Size() == 0) {
-    return nullptr;
-  }
+  // if (free_list_.empty() && replacer_->Size() == 0) {
+  //   return nullptr;
+  // }
 
   frame_id_t get_frame_id;
   if (page_table_->Find(page_id, get_frame_id) && pages_[get_frame_id].page_id_ == page_id) {
