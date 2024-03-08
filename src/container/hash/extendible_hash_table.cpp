@@ -122,18 +122,26 @@ template <typename K, typename V>
 void ExtendibleHashTable<K, V>::Insert(const K &key, const V &value) {
   size_t index = IndexOf(key);
   latch_.lock();
-  if (dir_[index]->IsFull()) {
-    if (global_depth_ == GetLocalDepthInternal(index)) {
-      // 因该执行dirtory的扩张 ，扩张一倍
-      for (int i = 0; i < (1 << global_depth_); i++) {
-        auto tmp = dir_[i];
-        dir_.push_back(tmp);
+  while (true) {
+    if (dir_[index]->IsFull()) {
+      if (global_depth_ == GetLocalDepthInternal(index)) {
+        // 因该执行dirtory的扩张 ，扩张一倍
+        for (int i = 0; i < (1 << global_depth_); i++) {
+          auto tmp = dir_[i];
+          dir_.push_back(tmp);
+        }
+        global_depth_++;
       }
-      global_depth_++;
+      // 分裂bucket 并且bucket的localdepth++
+      index = IndexOf(key);
+      RedistributeBucket(dir_[index]);
+    } else {
+      break;
     }
-    // 分裂bucket 并且bucket的localdepth++
-    index = IndexOf(key);
-    RedistributeBucket(dir_[index]);
+  }
+  V old_value;
+  if(dir_[index]->Find(key, old_value)) {
+    dir_[index]->Remove(key);
   }
   dir_[index]->Insert(key, value);
   latch_.unlock();
