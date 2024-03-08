@@ -38,11 +38,11 @@ auto LRUKReplacer::CacheGetFrame(frame_id_t frame_id) -> std::list<frame_id_t>::
 }
 
 auto LRUKReplacer::Evict(frame_id_t *frame_id) -> bool {
+  latch_.lock();
   if (curr_size_ == 0) {
+    latch_.unlock();
     return false;
   }
-
-  latch_.lock();
   for (auto it = history_list_.rbegin(); it != history_list_.rend(); it++) {
     auto frame = *it;
     if (is_evictable_[frame]) {
@@ -121,10 +121,11 @@ void LRUKReplacer::Remove(frame_id_t frame_id) {
   if (frame_id > static_cast<int>(replacer_size_)) {
     throw std::exception();
   }
+  latch_.lock();
   if (!is_evictable_[frame_id]) {
+    latch_.unlock();
     return;
   }
-  latch_.lock();
   if (access_count_[frame_id] >= k_) {
     auto de_iterator = CacheGetFrame(frame_id);
     cache_list_.erase(de_iterator);
@@ -132,6 +133,7 @@ void LRUKReplacer::Remove(frame_id_t frame_id) {
     auto de_iterator = HistoryGetFrame(frame_id);
     history_list_.erase(de_iterator);
   }
+  curr_size_--;
   access_count_[frame_id] = 0;
   latch_.unlock();
 }
