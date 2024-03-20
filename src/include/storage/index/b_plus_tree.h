@@ -74,6 +74,19 @@ class BPlusTree {
   // read data from file and remove one by one
   void RemoveFromFile(const std::string &file_name, Transaction *transaction = nullptr);
 
+
+  // MYTODO
+  void StartNewTree(const KeyType &key, const ValueType &value);
+
+  auto InsertIntoLeaf(const KeyType &key, const ValueType &value, Transaction *transaction) -> bool;
+
+  BPlusTreePage *ToTreePage(Page *page) { return reinterpret_cast<BPlusTreePage *>(page->GetData()); }
+  InternalPage *ToInternalPage(Page *page) { return reinterpret_cast<InternalPage *>(page->GetData()); }
+  LeafPage *ToLeafPage(Page *page) { return reinterpret_cast<LeafPage *>(page->GetData()); }
+
+  InternalPage *ToInternalPage(BPlusTreePage *page) { return reinterpret_cast<InternalPage *>(page); }
+  LeafPage *ToLeafPage(BPlusTreePage *page) { return reinterpret_cast<LeafPage *>(page); }
+
  private:
   void UpdateRootPageId(int insert_record = 0);
 
