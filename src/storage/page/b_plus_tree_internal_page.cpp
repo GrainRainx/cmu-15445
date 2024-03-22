@@ -12,6 +12,7 @@
 #include <iostream>
 #include <sstream>
 
+#include "common/config.h"
 #include "common/exception.h"
 #include "storage/page/b_plus_tree_internal_page.h"
 #include "storage/page/b_plus_tree_page.h"
@@ -32,7 +33,8 @@ void B_PLUS_TREE_INTERNAL_PAGE_TYPE::Init(page_id_t page_id, page_id_t parent_id
   SetParentPageId(parent_id);
   SetMaxSize(max_size);
   SetPageType(IndexPageType::INTERNAL_PAGE);
-  SetSize(1);
+  // not sure
+  SetSize(0);
 }
 /*
  * Helper method to get/set the key associated with input "index"(a.k.a
@@ -53,6 +55,29 @@ void B_PLUS_TREE_INTERNAL_PAGE_TYPE::SetKeyAt(int index, const KeyType &key) { a
  */
 INDEX_TEMPLATE_ARGUMENTS
 auto B_PLUS_TREE_INTERNAL_PAGE_TYPE::ValueAt(int index) const -> ValueType { return array_[index].second; }
+
+
+// MYTODO
+
+INDEX_TEMPLATE_ARGUMENTS
+auto B_PLUS_TREE_INTERNAL_PAGE_TYPE::Lookup(const KeyType& key, const KeyComparator &keyComparator) -> page_id_t{
+  int l = 0, r = GetSize();
+
+  while (l < r) {
+    int mid = (l + r) >> 1;
+    int result = keyComparator(array_[mid].first, key);
+    if (result >= 0) {
+      r = mid;
+    } else {
+      l = mid + 1;
+    }
+  }
+  return ValueAt(l); 
+}
+
+
+
+
 
 // valuetype for internalNode should be page id_t
 template class BPlusTreeInternalPage<GenericKey<4>, page_id_t, GenericComparator<4>>;

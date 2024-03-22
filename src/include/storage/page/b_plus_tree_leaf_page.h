@@ -13,6 +13,7 @@
 #include <utility>
 #include <vector>
 
+#include "common/config.h"
 #include "storage/page/b_plus_tree_page.h"
 
 namespace bustub {
@@ -54,6 +55,8 @@ class BPlusTreeLeafPage : public BPlusTreePage {
   // MYTODO
   void Insert(const KeyType &key, const ValueType &value, const KeyComparator &keyComparator);
   auto GetKvpair(int index) -> const MappingType &;
+
+  auto Lookup(const KeyType &key, const KeyComparator &keyComparator) -> page_id_t; 
 
  private:
   page_id_t next_page_id_;

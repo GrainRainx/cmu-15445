@@ -12,6 +12,7 @@
 #include <algorithm>
 #include <sstream>
 
+#include "common/config.h"
 #include "common/exception.h"
 #include "common/logger.h"
 #include "common/rid.h"
@@ -33,6 +34,7 @@ INDEX_TEMPLATE_ARGUMENTS
 void B_PLUS_TREE_LEAF_PAGE_TYPE::Init(page_id_t page_id, page_id_t parent_id, int max_size) {
   SetPageType(IndexPageType::LEAF_PAGE);
   SetMaxSize(max_size);
+  // not sure
   SetSize(0);
   SetPageId(page_id);
   SetParentPageId(parent_id);
@@ -64,7 +66,7 @@ INDEX_TEMPLATE_ARGUMENTS
 auto B_PLUS_TREE_LEAF_PAGE_TYPE::Insert(const KeyType &key, const ValueType &value, const KeyComparator &keyComparator)
     -> void {
   if (GetSize() == GetMaxSize()) {
-    // 分裂
+    // 分裂 TODO
     return;
   }
 
@@ -83,6 +85,18 @@ auto B_PLUS_TREE_LEAF_PAGE_TYPE::Insert(const KeyType &key, const ValueType &val
   *(array_ + l) = {key, value};
   IncreaseSize(1);
 }
+
+INDEX_TEMPLATE_ARGUMENTS
+auto B_PLUS_TREE_LEAF_PAGE_TYPE::Lookup(const KeyType &key, const KeyComparator &keyComparator)->page_id_t {
+  // TODO
+  LOG_INFO("this fun have no finish");
+  return 0;
+}
+
+
+
+
+
 
 template class BPlusTreeLeafPage<GenericKey<4>, RID, GenericComparator<4>>;
 template class BPlusTreeLeafPage<GenericKey<8>, RID, GenericComparator<8>>;

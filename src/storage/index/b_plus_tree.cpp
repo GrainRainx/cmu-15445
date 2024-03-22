@@ -5,6 +5,7 @@
 #include "common/logger.h"
 #include "common/rid.h"
 #include "storage/index/b_plus_tree.h"
+#include "storage/page/b_plus_tree_page.h"
 #include "storage/page/header_page.h"
 
 namespace bustub {
@@ -63,6 +64,9 @@ INDEX_TEMPLATE_ARGUMENTS
 void BPLUSTREE_TYPE::StartNewTree(const KeyType &key, const ValueType &value) {
   // 创建一个新的叶子节点，然后存kv值
   Page* new_page = buffer_pool_manager_->NewPage(&root_page_id_);
+  if (new_page == nullptr) {
+    throw Exception(ExceptionType::OUT_OF_MEMORY, "Cannot allocate new page");
+  }
   [[maybe_unused]] LeafPage* new_leaf_page = ToLeafPage(new_page);
   new_leaf_page->Init(root_page_id_, INVALID_PAGE_ID, leaf_max_size_);
   new_leaf_page->Insert(key, value, comparator_);
@@ -72,8 +76,22 @@ void BPLUSTREE_TYPE::StartNewTree(const KeyType &key, const ValueType &value) {
 
 INDEX_TEMPLATE_ARGUMENTS
 auto BPLUSTREE_TYPE::InsertIntoLeaf(const KeyType &key, const ValueType &value, Transaction *transaction) -> bool {
-  
-  
+  Page* root_page = buffer_pool_manager_->FetchPage(GetRootPageId());
+  // 要判断是内部节点还是叶子节点吗，接下来应该将page转换成节点的样子，然后去节点访问下一个index
+  auto* node = reinterpret_cast<BPlusTreePage*>(root_page->GetData());
+
+
+  while(!node->IsLeafPage()) {
+    auto* i_node = reinterpret_cast<InternalPage*>(node);
+    page_id_t next_page = i_node->Lookup(key, comparator_);
+    // TODO
+    std::cout << next_page << std::endl;
+    auto* child_page = buffer_pool_manager_->FetchPage(next_page);
+    
+
+  }
+
+
   return false; 
 }
 /*****************************************************************************
@@ -126,7 +144,6 @@ auto BPLUSTREE_TYPE::GetRootPageId() -> page_id_t { return root_page_id_; }
 /*****************************************************************************
  * MYTODO 
  *****************************************************************************/
-/*
 
 
 
